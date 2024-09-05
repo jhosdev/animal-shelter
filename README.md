@@ -1,139 +1,139 @@
-# Proyecto de Albergue de Animales
+# Animal Shelter Project
 
-Este proyecto consiste en una API REST para un albergue de animales desarrollada con Django Rest Framework y un cliente web construido con Next.js. El sistema permite gestionar animales, voluntarios, adoptantes y procesos de adopción.
+This project consists of a REST API for an animal shelter developed with Django Rest Framework and a web client built with Next.js. The system allows managing animals, volunteers, adopters, and adoption processes.
 
-## Tecnologías Utilizadas
+## Technologies Used
 
 - Backend:
   - Python 3.12
   - Django Rest Framework
-  - Simple JWT para autenticación
+  - Simple JWT for authentication
 - Frontend:
   - Next.js 14
-  - React con TypeScript
+  - React with TypeScript
   - Mantine UI
-  - App Router de Next.js
-- Base de Datos:
-  - PostgreSQL (configurado con Docker Compose para desarrollo local)
+  - Next.js App Router
+- Database:
+  - PostgreSQL (configured with Docker Compose for local development)
 
-## Configuración del Proyecto
+## Project Setup
 
 ### Backend (Django Rest Framework)
 
-1. Navega al directorio del backend:
+1. Navigate to the backend directory:
    ```
    cd backend
    ```
 
-2. Crea un entorno virtual:
+2. Create a virtual environment:
    ```
    python -m venv env
    ```
 
-3. Activa el entorno virtual:
-   - En Windows:
+3. Activate the virtual environment:
+   - On Windows:
      ```
      .\env\Scripts\activate
      ```
-   - En macOS y Linux:
+   - On macOS and Linux:
      ```
      source env/bin/activate
      ```
 
-4. Instala las dependencias:
+4. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-5. Configura las variables de entorno:
-   - Copia el archivo `.env.example` a `.env`
-   - Ajusta las variables en `.env` según tu configuración local
+5. Configure environment variables:
+   - Copy the `.env.example` file to `.env`
+   - Adjust the variables in `.env` according to your local setup
 
-6. Ejecuta las migraciones:
+6. Run migrations:
    ```
    python manage.py migrate
    ```
 
-7. Inicia el servidor de desarrollo:
+7. Start the development server:
    ```
    python manage.py runserver
    ```
 
-8. Para ejecutar las pruebas:
+8. To run tests:
    ```
    python manage.py test
    ```
 
 ### Frontend (Next.js)
 
-1. Navega al directorio del frontend:
+1. Navigate to the frontend directory:
    ```
    cd frontend
    ```
 
-2. Instala las dependencias:
+2. Install dependencies:
    ```
    npm install
    ```
 
-3. Configura la URL de la API:
-   - Copia el archivo `.env.example` a `.env.local`
-   - Ajusta la variable `NEXT_PUBLIC_API_URL` en `.env.local`
+3. Configure the API URL:
+   - Copy the `.env.example` file to `.env.local`
+   - Adjust the `NEXT_PUBLIC_API_URL` variable in `.env.local`
 
-4. Inicia el servidor de desarrollo:
+4. Start the development server:
    ```
    npm run dev
    ```
 
-## Base de Datos (PostgreSQL con Docker)
+## Database (PostgreSQL with Docker)
 
-Para configurar la base de datos PostgreSQL usando Docker Compose:
+To set up the PostgreSQL database using Docker Compose:
 
-1. Asegúrate de tener Docker y Docker Compose instalados.
-2. Desde la raíz del proyecto, ejecuta:
+1. Make sure you have Docker and Docker Compose installed.
+2. From the project root, run:
    ```
    docker-compose up -d
    ```
 
-## Despliegue
+## Deployment
 
-- Frontend: Desplegado en Vercel
-- Backend y Base de Datos: Desplegados en Render.com
+- Frontend: Deployed on Vercel
+- Backend and Database: Deployed on Render.com
 
-## Funcionalidades Logradas
+## Features Achieved
 
-1. Gestión de Animales:
-   - Listar, crear, actualizar y eliminar animales en el albergue
-   - Filtrar animales por tipo (perro o gato) y estado de adopción
+1. Animal Management:
+   - List, create, update, and delete animals in the shelter
+   - Filter animals by type (dog or cat) and adoption status
 
-2. Gestión de Voluntarios:
-   - Registro y autenticación de voluntarios
-   - Listar, actualizar y eliminar perfiles de voluntarios
-   - Asignar tareas y gestionar horarios de voluntarios
+2. Volunteer Management:
+   - Volunteer registration and authentication
+   - List, update, and delete volunteer profiles
+   - Assign tasks and manage volunteer schedules
 
-3. Gestión de Adoptantes:
-   - Registro y autenticación de adoptantes
-   - Listar, actualizar y eliminar perfiles de adoptantes
-   - Proceso de solicitud de adopción
+3. Adopter Management:
+   - Adopter registration and authentication
+   - List, update, and delete adopter profiles
+   - Adoption application process
 
-4. Proceso de Adopción:
-   - Crear y gestionar solicitudes de adopción
-   - Seguimiento del estado de las adopciones
-   - Aprobación o rechazo de solicitudes por parte de voluntarios
-   - Sincronaziación de la información de adopciones con adoptantes y animales
+4. Adoption Process:
+   - Create and manage adoption requests
+   - Track the status of adoptions
+   - Approval or rejection of requests by volunteers
+   - Synchronize adoption information with adopters and animals
 
-5. Autenticación y Autorización:
-   - Implementación de JWT para autenticación segura
-   - Diferentes niveles de acceso para administradores, voluntarios y adoptantes
+5. Authentication and Authorization:
+   - Implementation of JWT for secure authentication
+   - Different access levels for administrators, volunteers, and adopters
 
-6. Interfaz de Usuario:
-   - Diseño responsivo utilizando Mantine UI
-   - Navegación intuitiva con App Router de Next.js
-   - Formularios con validación para entrada de datos
+6. User Interface:
+   - Responsive design using Mantine UI
+   - Intuitive navigation with Next.js App Router
+   - Forms with validation for data entry
 
-## Notas Adicionales
+## Additional Notes
 
-- El proyecto utiliza Django Rest Framework para la API REST.
-- La autenticación se maneja con Simple JWT.
-- El frontend está construido con Next.js 14, utilizando el App Router y Mantine UI para la interfaz de usuario.
-- Se han implementado pruebas en Django para asegurar la calidad del código backend.
+- The project uses Django Rest Framework for the REST API.
+- Authentication is handled with Simple JWT.
+- The frontend is built with Next.js 14, using the App Router and Mantine UI for the user interface.
+- Tests have been implemented in Django to ensure the quality of the backend code.
