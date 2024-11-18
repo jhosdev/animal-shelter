@@ -1,79 +1,89 @@
-from rest_framework import viewsets, permissions, status, serializers
-from rest_framework.decorators import action
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from .models import User, Animal, Adoption
-from .serializers import UserSerializer, AnimalSerializer, AdoptionSerializer
-from .permissions import IsAdminUser, IsVolunteerUser, IsAdopterUser
+from .models import (
+    User, Role, UserDetails, Pet, Notification,
+    Subscription, Payment, Device, UsageLog, Habit
+)
+from .serializers import (
+    SignUpSerializer, UserSerializer, RoleSerializer, UserDetailsSerializer, PetSerializer, NotificationSerializer,
+    SubscriptionSerializer, PaymentSerializer, DeviceSerializer, UsageLogSerializer, HabitSerializer
+)
+
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
+
+# IAM
+class RoleViewSet(viewsets.ModelViewSet):
+    queryset = Role.objects.all()
+    serializer_class = RoleSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all().order_by('id')
+    queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    def get_permissions(self):
-        if self.action == 'create':
-            permission_classes = [permissions.AllowAny]
-        elif self.action == 'list':
-            permission_classes = [IsAdminUser | IsVolunteerUser]
-        elif self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
-            permission_classes = [IsAdminUser]
-        else:
-            permission_classes = [permissions.IsAuthenticated]
-        return [permission() for permission in permission_classes]
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.role == 'VOLUNTEER':
-            return User.objects.filter(role='ADOPTER')
-        return User.objects.all()
-
-    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
-    def me(self, request):
-        serializer = self.get_serializer(request.user)
-        return Response(serializer.data)
+# Profiles
+class UserDetailsViewSet(viewsets.ModelViewSet):
+    queryset = UserDetails.objects.all()
+    serializer_class = UserDetailsSerializer
 
 
-class AnimalViewSet(viewsets.ModelViewSet):
-    queryset = Animal.objects.all().order_by('id')
-    serializer_class = AnimalSerializer
-
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = [IsAdminUser | IsVolunteerUser]
-
-        return [permission() for permission in permission_classes]
-
-    def perform_create(self, serializer):
-        user = self.request.user
-        #if user.role != 'VOLUNTEER':
-        #    raise serializers.ValidationError("Only volunteers can create animals.")
-        serializer.save(volunteer=user)
-
-    @action(detail=True, methods=['post'], permission_classes=[IsVolunteerUser])
-    def change_status(self, request, pk=None):
-        animal = self.get_object()
-        new_status = request.data.get('status')
-        if new_status in dict(Animal.ANIMAL_STATUS).keys():
-            animal.status = new_status
-            animal.save()
-            return Response({'status': 'animal status updated'})
-        return Response({'status': 'invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+# Pets
+class PetViewSet(viewsets.ModelViewSet):
+    queryset = Pet.objects.all()
+    serializer_class = PetSerializer
 
 
-class AdoptionViewSet(viewsets.ModelViewSet):
-    queryset = Adoption.objects.all().order_by('id')
-    serializer_class = AdoptionSerializer
+# Communications
+class NotificationViewSet(viewsets.ModelViewSet):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
 
-    def get_permissions(self):
-        if self.action == 'create':
-            permission_classes = [IsAdopterUser]
-        elif self.action in ['list', 'retrieve', 'partial_update']:
-            permission_classes = [IsAdminUser | IsVolunteerUser]
-        else:
-            permission_classes = [IsAdminUser]
-        return [permission() for permission in permission_classes]
 
-    def perform_create(self, serializer):
-        serializer.save(adopter=self.request.user)
+# Subscriptions & Billing
+class SubscriptionViewSet(viewsets.ModelViewSet):
+    queryset = Subscription.objects.all()
+    serializer_class = SubscriptionSerializer
+
+
+class PaymentViewSet(viewsets.ModelViewSet):
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer
+
+
+# Tracking
+class DeviceViewSet(viewsets.ModelViewSet):
+    queryset = Device.objects.all()
+    serializer_class = DeviceSerializer
+
+
+class UsageLogViewSet(viewsets.ModelViewSet):
+    queryset = UsageLog.objects.all()
+    serializer_class = UsageLogSerializer
+
+
+class HabitViewSet(viewsets.ModelViewSet):
+    queryset = Habit.objects.all()
+    serializer_class = HabitSerializer
+
+
+class SignUpViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny]  # Allow any user to sign up
+
+    def create(self, request):
+        """
+        Handle user sign up. Create a new user and user details.
+        """
+        serializer = SignUpSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                'message': 'User created successfully',
+                'user': {
+                    'username': user.username,
+                    'email': user.email,
+                    'role': user.role.id,
+                }
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

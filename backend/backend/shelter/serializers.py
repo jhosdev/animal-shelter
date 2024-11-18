@@ -1,113 +1,149 @@
-from django.template.context_processors import request
 from rest_framework import serializers
-from .models import User, Animal, Adoption
+from .models import (
+    User, Role, UserDetails, Pet, Notification,
+    Subscription, Payment, Device, UsageLog, Habit
+)
+
+# IAM
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = '__all__'
 
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    role = RoleSerializer(read_only=True)
+    role_id = serializers.PrimaryKeyRelatedField(
+        queryset=Role.objects.all(), write_only=True, source='role'
+    )
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password', 'first_name', 'last_name', 'role', 'status']
+        fields = ['id', 'username', 'email', 'role', 'role_id', 'first_name', 'last_name']
 
+
+# Profiles
+class UserDetailsSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), write_only=True, source='user'
+    )
+
+    class Meta:
+        model = UserDetails
+        fields = ['id', 'user', 'user_id', 'first_name', 'last_name', 'birth_date', 'phone_number', 'image_url']
+
+
+# Pets
+class PetSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), write_only=True, source='user'
+    )
+
+    class Meta:
+        model = Pet
+        fields = ['id', 'user', 'user_id', 'name', 'breed', 'species', 'birth_date', 'weight', 'age', 'image_url']
+
+
+# Communications
+class NotificationSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), write_only=True, source='user'
+    )
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'user', 'user_id', 'notification_type', 'message', 'created_at']
+
+
+# Subscriptions & Billing
+class SubscriptionSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), write_only=True, source='user'
+    )
+
+    class Meta:
+        model = Subscription
+        fields = ['id', 'user', 'user_id', 'plan_type', 'start_date', 'end_date', 'status']
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    subscription = SubscriptionSerializer(read_only=True)
+    subscription_id = serializers.PrimaryKeyRelatedField(
+        queryset=Subscription.objects.all(), write_only=True, source='subscription'
+    )
+
+    class Meta:
+        model = Payment
+        fields = ['id', 'subscription', 'subscription_id', 'amount', 'payment_date', 'payment_method', 'currency']
+
+
+# Tracking
+class DeviceSerializer(serializers.ModelSerializer):
+    pet = PetSerializer(read_only=True)
+    pet_id = serializers.PrimaryKeyRelatedField(
+        queryset=Pet.objects.all(), write_only=True, source='pet'
+    )
+
+    class Meta:
+        model = Device
+        fields = ['id', 'pet', 'pet_id', 'serial_number', 'status']
+
+
+class UsageLogSerializer(serializers.ModelSerializer):
+    device = DeviceSerializer(read_only=True)
+    device_id = serializers.PrimaryKeyRelatedField(
+        queryset=Device.objects.all(), write_only=True, source='device'
+    )
+
+    class Meta:
+        model = UsageLog
+        fields = ['id', 'device', 'device_id', 'log_type', 'quantity', 'time', 'duration']
+
+
+class HabitSerializer(serializers.ModelSerializer):
+    pet = PetSerializer(read_only=True)
+    pet_id = serializers.PrimaryKeyRelatedField(
+        queryset=Pet.objects.all(), write_only=True, source='pet'
+    )
+
+    class Meta:
+        model = Habit
+        fields = ['id', 'pet', 'pet_id', 'water_consumption', 'food_consumption', 'start_date', 'end_date']
+
+
+# custom serializers:
+
+class SignUpSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    role = serializers.CharField(max_length=50)  # Accept the role name as a string
+    first_name = serializers.CharField(max_length=100)
+    last_name = serializers.CharField(max_length=100)
+    birth_date = serializers.DateField()
+    phone_number = serializers.CharField(max_length=15)
+    image_url = serializers.URLField(required=False, allow_blank=True)
+
+    def validate_role(self, value):
+        """Ensure the role is valid and exists in the database"""
+        try:
+            return Role.objects.get(name=value)  # Retrieve the Role based on name
+        except Role.DoesNotExist:
+            raise serializers.ValidationError("Role with the specified name does not exist.")
+    
     def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', ''),
-            role=validated_data.get('role', 'ADOPTER'),  # Default role is ADOPTER
-            status=validated_data.get('status', 'ACTIVE')
-        )
+        # Extract user and user details data
+        user_data = {key: validated_data[key] for key in ['username', 'email', 'password', 'role']}
+        user_details_data = {key: validated_data[key] for key in ['first_name', 'last_name', 'birth_date', 'phone_number', 'image_url']}
+        
+        # Create the user instance
+        user = User.objects.create_user(**user_data)
+        
+        # Create user details instance
+        user_details = UserDetails.objects.create(user=user, **user_details_data)
+        
         return user
-
-
-class AnimalSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Animal
-        fields = '__all__'
-        extra_kwargs = {
-            'volunteer': {'required': False},
-        }
-
-    def create(self, validated_data):
-        request = self.context.get('request')
-        user = request.user
-        validated_data['volunteer'] = user
-
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        request = self.context.get('request')
-        user = request.user
-
-        if 'status' in validated_data:
-            if validated_data['status'] == 'PENDING':
-                Adoption.objects.create(
-                    animal=instance,
-                    adopter=user,
-                    volunteer=user,
-                    status=validated_data['status']
-                )
-            if validated_data['status'] == 'ADOPTED':
-                adoption, created = Adoption.objects.get_or_create(
-                    animal=instance,
-                    defaults={
-                        'adopter': user,
-                        'volunteer': user,
-                        'status': 'COMPLETED'
-                    }
-                )
-                if not created:
-                    if adoption.status == 'PENDING':
-                        adoption.status = 'COMPLETED'
-                        adoption.save()
-
-        return super().update(instance, validated_data)
-
-
-class AdoptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Adoption
-        fields = '__all__'
-        extra_kwargs = {
-            'adopter': {'required': False},
-            'volunteer': {'required': False},
-        }
-
-    def create(self, validated_data):
-        animal_id = self.context['request'].data.get('animal')
-        animal = Animal.objects.get(id=animal_id)
-
-        if animal is None:
-            raise serializers.ValidationError("Invalid animal ID.")
-
-        if animal.status != 'AVAILABLE':
-            raise serializers.ValidationError("Animal is not available.")
-
-        user = self.context['request'].user
-        validated_data['adopter'] = user
-        validated_data['volunteer'] = animal.volunteer
-
-        animal.status = 'PENDING'
-        animal.save()
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-
-        animal = instance.animal
-
-        if 'animal' in validated_data:
-            animal_id = validated_data['animal']
-            animal = Animal.objects.get(id=animal_id)
-
-        if 'status' in validated_data:
-            if validated_data['status'] == 'COMPLETED':
-                animal.status = 'ADOPTED'
-            elif validated_data['status'] == 'CANCELLED':
-                animal.status = 'AVAILABLE'
-
-            animal.save()
-
-        return super().update(instance, validated_data)
