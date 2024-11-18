@@ -6,6 +6,8 @@ services:
     environment:
       POSTGRES_LOGGING: "on"
       POSTGRES_LOG_STATEMENT: "all"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "app_db"
     ports:
       - "5432:5432"
     volumes:
