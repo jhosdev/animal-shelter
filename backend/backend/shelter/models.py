@@ -94,6 +94,9 @@ class Device(models.Model):
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name='devices')
     serial_number = models.CharField(max_length=100, unique=True)
     status = models.CharField(max_length=20)
+    food_percentage = models.FloatField(default=100)
+    water_percentage = models.FloatField(default=100)
+    battery_percentage = models.FloatField(default=100)
 
     def __str__(self):
         return self.serial_number
