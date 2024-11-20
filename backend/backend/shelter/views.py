@@ -57,6 +57,13 @@ class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user_id = self.request.query_params.get('user_id', None)
+        if user_id:
+            queryset = queryset.filter(pet__user__id=user_id)
+        return queryset
+
 
 class UsageLogViewSet(viewsets.ModelViewSet):
     queryset = UsageLog.objects.all()
