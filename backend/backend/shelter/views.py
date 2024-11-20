@@ -47,11 +47,25 @@ class NotificationViewSet(viewsets.ModelViewSet):
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            queryset = queryset.filter(user__id=user_id)
+        return queryset
+
 
 # Subscriptions & Billing
 class SubscriptionViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            queryset = queryset.filter(user__id=user_id)
+        return queryset
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
@@ -76,6 +90,12 @@ class UsageLogViewSet(viewsets.ModelViewSet):
     queryset = UsageLog.objects.all()
     serializer_class = UsageLogSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            queryset = queryset.filter(device__pet__user__id=user_id)
+        return queryset
 
 class HabitViewSet(viewsets.ModelViewSet):
     queryset = Habit.objects.all()
