@@ -28,6 +28,13 @@ class UserDetailsViewSet(viewsets.ModelViewSet):
     queryset = UserDetails.objects.all()
     serializer_class = UserDetailsSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            queryset = queryset.filter(user__id=user_id)
+        return queryset
+
 
 # Pets
 class PetViewSet(viewsets.ModelViewSet):
