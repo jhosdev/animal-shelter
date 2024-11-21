@@ -213,6 +213,13 @@ class UpdateDeviceQuantityViewSet(viewsets.ViewSet):
                 duration=None  # Assuming you calculate duration if needed
             )
 
+            # TODO: Create a Notification entry
+            #notification = Notification.objects.create(
+            #    user=device.pet.user,
+            #    notification_type="usage_log_created",
+            #    message=f"{action.capitalize()} operation successful and usage log created."
+            #)
+
             # Return the updated quantities and success message
             return Response({
                 "food_quantity": device.food_quantity,
