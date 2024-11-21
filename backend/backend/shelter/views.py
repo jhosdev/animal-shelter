@@ -1,3 +1,4 @@
+import os
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from .models import (
@@ -78,11 +79,26 @@ class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
 
+    def get_authenticators(self):
+        """
+        Skip JWT authentication for public endpoints.
+        """
+        iot_device_api_key = self.request.headers.get('iot-device-api-key')
+        if self.request.method == 'GET' and (
+            'serial_number' in self.request.GET or
+            self.kwargs.get('pk')  # For /device/{id} endpoint
+        ) and iot_device_api_key == os.getenv('IOT_DEVICE_API_KEY'):
+            return []
+        return super().get_authenticators()
+
     def get_queryset(self):
         queryset = super().get_queryset()
         user_id = self.request.query_params.get('user_id', None)
         if user_id:
             queryset = queryset.filter(pet__user__id=user_id)
+        serial_number = self.request.query_params.get('serial_number', None)
+        if serial_number:
+            queryset = queryset.filter(serial_number=serial_number)
         return queryset
 
 
