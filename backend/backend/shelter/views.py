@@ -83,6 +83,8 @@ class DeviceViewSet(viewsets.ModelViewSet):
         """
         Skip JWT authentication for public endpoints.
         """
+        if self.request is  None:
+            return []
         iot_device_api_key = self.request.headers.get('iot-device-api-key')
         if self.request.method == 'GET' and (
             'serial_number' in self.request.GET or

@@ -90,7 +90,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Device
-        fields = ['id', 'pet', 'pet_id', 'serial_number', 'status', 'food_percentage', 'water_percentage', 'battery_percentage']
+        fields = ['id', 'pet', 'pet_id', 'serial_number', 'status', 'food_quantity', 'water_quantity', 'battery_quantity', 'food_limit', 'water_limit']
 
 
 class UsageLogSerializer(serializers.ModelSerializer):
