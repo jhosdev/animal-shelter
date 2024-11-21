@@ -94,14 +94,13 @@ class DeviceSerializer(serializers.ModelSerializer):
 
 
 class UsageLogSerializer(serializers.ModelSerializer):
-    device = DeviceSerializer(read_only=True)
     device_id = serializers.PrimaryKeyRelatedField(
         queryset=Device.objects.all(), write_only=True, source='device'
     )
 
     class Meta:
         model = UsageLog
-        fields = ['id', 'device', 'device_id', 'log_type', 'quantity', 'time', 'duration']
+        fields = ['id', 'device_id', 'log_type', 'quantity', 'time', 'duration']
 
 
 class HabitSerializer(serializers.ModelSerializer):
@@ -147,3 +146,15 @@ class SignUpSerializer(serializers.Serializer):
         user_details = UserDetails.objects.create(user=user, **user_details_data)
         
         return user
+    
+class ModifyQuantitySerializer(serializers.Serializer):
+    device_id = serializers.UUIDField()
+    type = serializers.ChoiceField(choices=['food', 'water'])
+    quantity = serializers.FloatField()
+    action = serializers.ChoiceField(choices=['add', 'subtract'])
+
+    def validate_quantity(self, value):
+        """Ensure quantity is positive"""
+        if value <= 0:
+            raise serializers.ValidationError("Quantity must be positive.")
+        return value

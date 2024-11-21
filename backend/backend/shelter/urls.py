@@ -2,7 +2,7 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 from .views import (
-    SignUpViewSet, UserViewSet, RoleViewSet, UserDetailsViewSet, PetViewSet, NotificationViewSet,
+    SignUpViewSet, UpdateDeviceQuantityViewSet, UserViewSet, RoleViewSet, UserDetailsViewSet, PetViewSet, NotificationViewSet,
     SubscriptionViewSet, PaymentViewSet, DeviceViewSet, UsageLogViewSet, HabitViewSet
 )
 
@@ -17,6 +17,8 @@ router.register('payments', PaymentViewSet)
 router.register('devices', DeviceViewSet)
 router.register('usage-logs', UsageLogViewSet)
 router.register('habits', HabitViewSet)
+router.register(r'update-device-quantity', UpdateDeviceQuantityViewSet, basename='update-device-quantity')
+
 
 urlpatterns = router.urls
 

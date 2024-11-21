@@ -110,7 +110,7 @@ class UsageLog(models.Model):
     log_type = models.CharField(max_length=50)
     quantity = models.FloatField()
     time = models.DateTimeField()
-    duration = models.DurationField()  # Stored as a timedelta
+    duration = models.DurationField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.log_type} at {self.time}'
