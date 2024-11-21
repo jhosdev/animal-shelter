@@ -89,6 +89,8 @@ class DeviceViewSet(viewsets.ModelViewSet):
             self.kwargs.get('pk')  # For /device/{id} endpoint
         ) and iot_device_api_key == os.getenv('IOT_DEVICE_API_KEY'):
             return []
+        if self.request.method == 'PATCH' and iot_device_api_key == os.getenv('IOT_DEVICE_API_KEY'):
+            return []
         return super().get_authenticators()
 
     def get_queryset(self):
